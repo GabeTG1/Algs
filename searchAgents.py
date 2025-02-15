@@ -343,7 +343,7 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         vistedCorners = set()
-        return (self.startingPosition, set())
+        return (self.startingPosition, vistedCorners)
 
     def isGoalState(self, state):
         """
@@ -445,8 +445,28 @@ def cornersHeuristic(state, problem):
     """
     corners = problem.corners  # These are the corner coordinates
     walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
+    
+    # "*** YOUR CODE HERE ***"
+    position, visitedCorners = state  
+    unvisitedCorners = [corner for corner in corners if corner not in visitedCorners]
+    
+    if not unvisitedCorners:
+        return 0  
+    
+    heuristicCost = 0
+    currentPosition = position
+    
+    while unvisitedCorners:
+        distances = [(util.manhattanDistance(currentPosition, corner), corner) for corner in unvisitedCorners]
+        minDistance, nearestCorner = min(distances)
 
-    "*** YOUR CODE HERE ***"
+        heuristicCost += minDistance
+        currentPosition = nearestCorner
+        unvisitedCorners.remove(nearestCorner)
+    
+    return heuristicCost
+    
+
     return 0  # Default to trivial solution
 
 
@@ -556,8 +576,6 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
-
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -591,8 +609,9 @@ class ClosestDotSearchAgent(SearchAgent):
         food = gameState.getFood()
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
-
+        
         "*** YOUR CODE HERE ***"
+        return search.aStarSearch(problem, foodHeuristic) 
         util.raiseNotDefined()
 
 
