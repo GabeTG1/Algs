@@ -96,7 +96,7 @@ def depthFirstSearch(problem):
 
     fringe = Stack()
     fringe.push((problem.getStartState(), []))  
-    visited = set()
+    visited = []
 
     while not fringe.isEmpty():
         state, path = fringe.pop()
@@ -105,7 +105,7 @@ def depthFirstSearch(problem):
             return path  
 
         if state not in visited:
-            visited.add(state)
+            visited.append(state)
 
             for successor, action, _ in problem.getSuccessors(state): 
                 fringe.push((successor, path + [action]))
@@ -118,7 +118,7 @@ def breadthFirstSearch(problem):
 
     fringe = Queue()
     fringe.push((problem.getStartState(), []))
-    visited = set()
+    visited = []
     
     while not fringe.isEmpty():
         state, path = fringe.pop()
@@ -127,10 +127,10 @@ def breadthFirstSearch(problem):
             return path
 
         if state not in visited:
-            visited.add(state)
+            visited.append(state)
 
             for successor, action, _ in problem.getSuccessors(state):
-                fringe.push((successor, path + [action]), )
+                fringe.push((successor, path + [action]))
 
     
     
@@ -143,8 +143,8 @@ def uniformCostSearch(problem):
     from util import PriorityQueue
 
     fringe = PriorityQueue()
-    fringe.push((problem.getStartState(), []), problem.getCostOfActions([]))
-    visited = set()
+    fringe.push((problem.getStartState(), []), 0)
+    visited = []
     
     while not fringe.isEmpty():
         state, path = fringe.pop()
@@ -153,12 +153,13 @@ def uniformCostSearch(problem):
             return path
 
         if state not in visited:
-            visited.add(state)
+            visited.append(state)
 
             for successor, action, cost in problem.getSuccessors(state):
-                fringe.push((successor, path + [action]), cost)
+                newPath = path + [action]
+                totalCost = problem.getCostOfActions(newPath)
+                fringe.push((successor, newPath), totalCost)
 
-    util.raiseNotDefined()
 
 
 def nullHeuristic(state, problem=None):
@@ -172,7 +173,26 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue
+
+    fringe = PriorityQueue()
+    fringe.push((problem.getStartState(), []), problem.getCostOfActions([]))
+    visited = []
+    
+    while not fringe.isEmpty():
+        state, path = fringe.pop()
+
+        if problem.isGoalState(state):
+            return path
+
+        if state not in visited:
+            visited.append(state)
+
+            for successor, action, cost in problem.getSuccessors(state):
+                newPath = path + [action]
+                totalCost = problem.getCostOfActions(newPath)
+                fringe.push((successor, newPath), totalCost + heuristic(successor, problem))
+
 
 
 # Abbreviations

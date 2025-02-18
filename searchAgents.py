@@ -343,7 +343,7 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         vistedCorners = set()
-        return (self.startingPosition, set())
+        return (self.startingPosition, vistedCorners)
 
     def isGoalState(self, state):
         """
@@ -445,8 +445,28 @@ def cornersHeuristic(state, problem):
     """
     corners = problem.corners  # These are the corner coordinates
     walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
+    
+    # "*** YOUR CODE HERE ***"
+    position, visitedCorners = state  
+    unvisitedCorners = [corner for corner in corners if corner not in visitedCorners]
+    
+    if not unvisitedCorners:
+        return 0  
+    
+    heuristicCost = 0
+    currentPosition = position
+    
+    while unvisitedCorners:
+        distances = [(util.manhattanDistance(currentPosition, corner), corner) for corner in unvisitedCorners]
+        minDistance, nearestCorner = min(distances)
 
-    "*** YOUR CODE HERE ***"
+        heuristicCost += minDistance
+        currentPosition = nearestCorner
+        unvisitedCorners.remove(nearestCorner)
+    
+    return heuristicCost
+    
+
     return 0  # Default to trivial solution
 
 
@@ -556,7 +576,24 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    if foodGrid.count() == 0:
+        return 0
+
+    foodList = foodGrid.asList()
+    
+    maxDistance = 0
+    for foodPosition in foodList:
+
+        if (position, foodPosition) not in problem.heuristicInfo:
+            dist = mazeDistance(position, foodPosition, problem.startingGameState)
+            problem.heuristicInfo[(position, foodPosition)] = dist
+        else:
+            dist = problem.heuristicInfo[(position, foodPosition)]
+
+        if dist > maxDistance:
+            maxDistance = dist
+
+    return maxDistance
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -591,9 +628,10 @@ class ClosestDotSearchAgent(SearchAgent):
         food = gameState.getFood()
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
-
+        
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.bfs(problem)
+    
 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -630,7 +668,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x, y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.food[x][y]
 
 
 def mazeDistance(point1, point2, gameState):
